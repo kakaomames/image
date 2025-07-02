@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APIテスト - 動的リンク生成</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .section { margin-bottom: 30px; padding: 15px; border: 1px solid #eee; border-radius: 5px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"] { width: 80%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        .dynamic-links a { display: block; margin-bottom: 8px; color: #007bff; text-decoration: none; }
+        .dynamic-links a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>APIテスト - 動的リンク生成</h1>
+
+    <div class="section">
+        <h2>YouTube動画URL入力</h2>
+        <label for="youtubeUrlInput">YouTube動画のURLを入力してください:</label>
+        <input type="text" id="youtubeUrlInput" placeholder="例: https://www.youtube.com/watch?v=YOUR_VIDEO_ID_HERE または https://youtu.be/YOUR_VIDEO_ID_HERE">
+        <p>（入力すると下のリンクが自動で更新されます）</p>
+    </div>
+
+    <div class="section">
+        <h2>生成されたAPIリンク</h2>
+        <div class="dynamic-links">
+            <p>字幕取得API: <a id="jimakuLink" href="#">URLを入力してください</a></p>
+            <p>DASHマニフェスト (JSON) 取得API: <a id="linkLink" href="#">URLを入力してください</a></p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>直接テスト（動画IDを直接入力）</h2>
+        <p>（上の機能がうまく動かない場合や、直接IDを指定したい場合）</p>
+        <label for="directVideoIdInput">YouTube Video ID:</label>
+        <input type="text" id="directVideoIdInput" placeholder="例: 4rLDBHgpJcs">
+        <button onclick="updateLinksWithDirectId()">リンクを更新</button>
+        <div class="dynamic-links">
+            <p>字幕取得API (直接): <a id="jimakuLinkDirect" href="#">IDを入力してください</a></p>
+            <p>DASHマニフェスト (JSON) 取得API (直接): <a id="linkLinkDirect" href="#">IDを入力してください</a></p>
+        </div>
+    </div>
+
+
+    <script>
+        const youtubeUrlInput = document.getElementById('youtubeUrlInput');
+        const jimakuLink = document.getElementById('jimakuLink');
+        const linkLink = document.getElementById('linkLink');
+
+        const directVideoIdInput = document.getElementById('directVideoIdInput');
+        const jimakuLinkDirect = document.getElementById('jimakuLinkDirect');
+        const linkLinkDirect = document.getElementById('linkLinkDirect');
+
+        // YouTube URLからVideo IDを抽出する関数
+        function getYouTubeVideoId(url) {
+            let videoId = null;
+            const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const match = url.match(regExp);
+            if (match) {
+                videoId = match[1];
+            }
+            return videoId;
+        }
+
+        // 入力に基づいてリンクを更新する関数
+        function updateLinks(videoId) {
+            if (videoId) {
+                jimakuLink.href = `/jimaku?id=${videoId}`;
+                jimakuLink.textContent = `/jimaku?id=${videoId}`;
+                jimakuLink.target = '_blank';
+
+                linkLink.href = `/link?id=${videoId}`;
+                linkLink.textContent = `/link?id=${videoId}`;
+                linkLink.target = '_blank';
+            } else {
+                jimakuLink.href = '#';
+                jimakuLink.textContent = '有効なYouTube URLを入力してください';
+                jimakuLink.target = '_self';
+
+                linkLink.href = '#';
+                linkLink.textContent = '有効なYouTube URLを入力してください';
+                linkLink.target = '_self';
+            }
+        }
+
+        // 直接ID入力に基づいてリンクを更新する関数
+        function updateLinksWithDirectId() {
+            const videoId = directVideoIdInput.value.trim();
+            if (videoId) {
+                jimakuLinkDirect.href = `/jimaku?id=${videoId}`;
+                jimakuLinkDirect.textContent = `/jimaku?id=${videoId}`;
+                jimakuLinkDirect.target = '_blank';
+
+                linkLinkDirect.href = `/link?id=${videoId}`;
+                linkLinkDirect.textContent = `/link?id=${videoId}`;
+                linkLinkDirect.target = '_blank';
+            } else {
+                jimakuLinkDirect.href = '#';
+                jimakuLinkDirect.textContent = 'IDを入力してください';
+                jimakuLinkDirect.target = '_self';
+
+                linkLinkDirect.href = '#';
+                linkLinkDirect.textContent = 'IDを入力してください';
+                linkLinkDirect.target = '_self';
+            }
+        }
+
+        // YouTube URL入力フィールドの変更を監視
+        youtubeUrlInput.addEventListener('input', (event) => {
+            const url = event.target.value;
+            const videoId = getYouTubeVideoId(url);
+            updateLinks(videoId);
+        });
+
+        // ページロード時に初期状態を設定
+        document.addEventListener('DOMContentLoaded', () => {
+            updateLinks(null); // 初期はリンクを無効化
+            updateLinksWithDirectId(); // 直接入力の初期状態も設定
+        });
+
+    </script>
+</body>
+</html>
