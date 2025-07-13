@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>画像生成AI</title>
+</head>
+<body>
+  <h1>画像生成AI（指示から画像へ）</h1>
+  <input type="text" id="prompt" placeholder="例：パステルカラーのブイズが寝てる">
+  <button onclick="generate()">生成</button>
+  <br><br>
+  <img id="result" width="512" />
+  <br>
+  <a id="download" download="image.png">📥 ダウンロード</a>
+
+  <script>
+    async function generate() {
+      const prompt = document.getElementById("prompt").value;
+      const res = await fetch("/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ prompt })
+      });
+      const data = await res.json();
+      const imgSrc = `data:image/png;base64,${data.base64Image}`;
+      document.getElementById("result").src = imgSrc;
+      document.getElementById("download").href = imgSrc;
+    }
+  </script>
+</body>
+</html>
